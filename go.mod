@@ -1,3 +1,8 @@
-module github.com/spector-asael/lab2-asaeltobar
+module github.com/spector-asael/lab4-crud
 
 go 1.25.6
+
+require (
+	github.com/julienschmidt/httprouter v1.3.0 // indirect
+	github.com/lib/pq v1.11.2 // indirect
+)

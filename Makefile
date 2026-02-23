@@ -9,7 +9,7 @@ include .envrc
 .PHONY: run help checkbalance deposit comment healthcheck all
 run: 
 	@echo 'Running application...'
-	@go run ./cmd/api
+	@go run ./cmd/api -db-dsn="${BANK_DB_DSN}"
 
 # Help target
 help:
@@ -87,7 +87,7 @@ healthcheck:
 
 ## db/psql: Connect to the banking database using psql
 .PHONY: db
-db/psql:
+db:
 	psql ${BANK_DB_DSN}
 
 ## db/migrations/new name=$1: Create a new database migration
