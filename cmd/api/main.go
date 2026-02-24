@@ -11,6 +11,7 @@ import (
 	"time"
 	"math/rand"
 	"github.com/spector-asael/lab4-crud/cmd/api/handler"
+	"github.com/spector-asael/lab4-crud/internal/data"
 	"context"
 	"database/sql"
 	_ "github.com/lib/pq"
@@ -68,6 +69,12 @@ func main() {
 	appInstance := &handler.ApplicationDependencies {
 		Config: settings,
 		Logger: logger,
+		Models: data.Models{
+		Comments: data.CommentModel{DB: db},
+		Deposits: data.DepositModel{DB: db},
+		Balances: data.BalanceModel{DB: db},
+		History: data.HistoryModel{DB: db},
+	},
 	}
 
 	apiServer := &http.Server{

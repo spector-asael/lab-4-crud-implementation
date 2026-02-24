@@ -22,9 +22,6 @@ help:
 	@echo "  make checkbalance2  - Test POST /v1/balance (user 2)"
 	@echo "  make deposit        - Test POST /v1/deposit (valid request)"
 	@echo "  make deposit2       - Test POST /v1/deposit (invalid request)"
-	@echo "  make comment        - Test POST /v1/comments"
-	@echo "  make healthcheck    - Test GET  /v1/healthcheck"
-	@echo "  make all            - Run all API tests"
 	@echo ""
 	@echo "Database:"
 	@echo "  make db/psql        - Connect to database using psql"
@@ -52,7 +49,7 @@ checkbalance:
 	@echo "Testing /balance..."
 	curl -X POST http://localhost:4000/v1/balance \
 	-H "Content-Type: application/json" \
-	-d '{"user_id":1,"bank_number":111111}'
+	-d '{"gl_account_id":1}'
 
 checkbalance2:
 	@echo "Testing /balance..."
@@ -65,7 +62,7 @@ deposit:
 	@echo "Testing /deposit..."
 	curl -X POST http://localhost:4000/v1/deposit \
 	-H "Content-Type: application/json" \
-	-d '{"user_id":1,"bank_number":111111,"deposit_amount":500.75}'
+	-d '{"gl_account_id":1,"amount":500.75}'
 
 deposit2:
 	@echo "Testing /deposit..."
@@ -73,17 +70,18 @@ deposit2:
 	-H "Content-Type: application/json" \
 	-d '{"user_id":1,"bank_number":111111,"deposit_amount":500 75}'
 
-# POST /comments
-comment:
-	@echo "Testing /comments..."
-	curl -X POST http://localhost:4000/v1/comments \
-	-H "Content-Type: application/json" \
-	-d '{"content":"This is a test comment","author":"Spector"}'
 
-# GET /healthcheck
-healthcheck:
-	@echo "Testing /healthcheck..."
-	curl -X GET http://localhost:4000/v1/healthcheck
+checkhistory:
+	@echo "Testing /history..."
+	curl -X POST http://localhost:4000/v1/history \
+	-H "Content-Type: application/json" \
+	-d '{"user_id":1}'
+
+deleteentry:
+	@echo "Testing /delete..."
+		curl -X DELETE http://localhost:4000/v1/delete \
+		-H "Content-Type: application/json" \
+		-d '{"ledger_id":3}'
 
 ## db/psql: Connect to the banking database using psql
 .PHONY: db
@@ -92,7 +90,7 @@ db:
 
 ## db/migrations/new name=$1: Create a new database migration
 .PHONY: migrations/new
-db/migrations/new:
+migrations/new:
 	@echo 'Creating migration files for ${name}...'
 	migrate create -seq -ext=.sql -dir=./migrations ${name}
 

@@ -1,47 +1,49 @@
-// Filename: cmd/api/deposits.go
+// Filename: cmd/api/checkhistory.go
 package handler
 
 import (
 	"net/http"
+
 	"github.com/spector-asael/lab4-crud/internal/data"
 	"github.com/spector-asael/lab4-crud/internal/validator"
 )
 
-func (a *ApplicationDependencies) depositHandler(
+func (a *ApplicationDependencies) checkHistoryHandler(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
 
-	var input data.Deposit
+	var input struct {
+		UserID int64 `json:"user_id"`
+	}
 
-	// Decode JSON into struct
+	// Decode JSON
 	err := a.readJSON(w, r, &input)
 	if err != nil {
 		a.badRequestResponse(w, r, err)
 		return
 	}
 
-	// Validate input
+	// Validate input using the model's validator
 	v := validator.New()
-	data.ValidateDeposit(v, &input)
-
+	data.ValidateHistory(v, input.UserID)
 	if !v.IsEmpty() {
 		a.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	// Insert into database (creates journal + ledger entry)
-	err = a.Models.Deposits.Insert(&input)
+	// Get ledger history
+	history, err := a.Models.History.GetByUserID(input.UserID)
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 		return
 	}
 
-	// Return created deposit
+	// Return JSON response
 	err = a.writeJSON(
 		w,
-		http.StatusCreated,
-		envelope{"deposit": input},
+		http.StatusOK,
+		envelope{"history": history},
 		nil,
 	)
 	if err != nil {

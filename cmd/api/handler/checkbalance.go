@@ -2,48 +2,49 @@
 package handler
 
 import (
-  // "encoding/json"
-  "fmt"
-  "net/http"
-  // import the data package which contains the definition for Comment
-  "github.com/spector-asael/lab4-crud/internal/data"
+	"net/http"
+	"github.com/spector-asael/lab4-crud/internal/validator"
+    "github.com/spector-asael/lab4-crud/internal/data"
 )
-                 
+
 func (a *ApplicationDependencies) checkBalanceHandler(
-    w http.ResponseWriter,
-    r *http.Request,
+	w http.ResponseWriter,
+	r *http.Request,
 ) {
 
-    var incomingData struct {
-        UserID     int64 `json:"user_id"`
-        BankNumber int64 `json:"bank_number"`
-    }
+	var input struct {
+		GLAccountID int64 `json:"gl_account_id"`
+	}
 
-    err := a.readJSON(w, r, &incomingData)
-    if err != nil {
-        a.badRequestResponse(w, r, err)
+	// Decode JSON
+	err := a.readJSON(w, r, &input)
+	if err != nil {
+		a.badRequestResponse(w, r, err)
+		return
+	}
+
+
+    v := validator.New()
+    data.ValidateBalance(v, &data.Balance{GLAccountID: input.GLAccountID})
+    if !v.IsEmpty() {
+        a.failedValidationResponse(w, r, v.Errors)
         return
     }
+	// Get balance from ledger
+	balance, err := a.Models.Balances.GetByGLAccountID(input.GLAccountID)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
 
-    amount, ok := validateBankAccount(incomingData.UserID, incomingData.BankNumber)
-    if !ok {
-        a.badRequestResponse(w, r, fmt.Errorf("invalid user_id or bank_number"))
-        return
-    }
-
-    // Create your data.Balance struct
-    balance := data.Balance{
-        UserID: incomingData.UserID,
-        Amount: amount,
-    }
-
-    err = a.writeJSON(
-        w,
-        http.StatusOK,
-        envelope{"balance": balance},
-        nil,
-    )
-    if err != nil {
-        a.serverErrorResponse(w, r, err)
-    }
+	// Return balance
+	err = a.writeJSON(
+		w,
+		http.StatusOK,
+		envelope{"balance": balance},
+		nil,
+	)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+	}
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"log/slog"
+	"github.com/spector-asael/lab4-crud/internal/data"
 )
 
 type ServerConfig struct {
@@ -16,4 +17,5 @@ type ServerConfig struct {
 type ApplicationDependencies struct {
 	Config ServerConfig
 	Logger *slog.Logger
+	Models data.Models
 }
