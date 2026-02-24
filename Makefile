@@ -87,7 +87,7 @@ updateentry:
 	@echo "Testing /update..."
 		curl -X PATCH http://localhost:4000/v1/update \
 		-H "Content-Type: application/json" \
-		-d '{"ledger_id":5,"amount":1000.50}'
+		-d '{"ledger_id":4,"amount":1000.50}'
 
 ## db/psql: Connect to the banking database using psql
 .PHONY: db
