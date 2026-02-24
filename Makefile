@@ -18,7 +18,7 @@ help:
 	@echo "  make run            - Run API server"
 	@echo ""
 	@echo "API Testing (requires server running):"
-	@echo "  make checkbalance   - Test POST /v1/balance (user 1)"
+	@echo "  make checkbalance   - Test GET /v1/balance (user 1)"
 	@echo "  make checkbalance2  - Test POST /v1/balance (user 2)"
 	@echo "  make deposit        - Test POST /v1/deposit (valid request)"
 	@echo "  make deposit2       - Test POST /v1/deposit (invalid request)"
@@ -47,7 +47,7 @@ help:
 # POST /balance
 checkbalance:
 	@echo "Testing /balance..."
-	curl -X POST http://localhost:4000/v1/balance \
+	curl -X GET http://localhost:4000/v1/balance \
 	-H "Content-Type: application/json" \
 	-d '{"gl_account_id":1}'
 
@@ -82,6 +82,12 @@ deleteentry:
 		curl -X DELETE http://localhost:4000/v1/delete \
 		-H "Content-Type: application/json" \
 		-d '{"ledger_id":3}'
+
+updateentry:
+	@echo "Testing /update..."
+		curl -X PATCH http://localhost:4000/v1/update \
+		-H "Content-Type: application/json" \
+		-d '{"ledger_id":5,"amount":1000.50}'
 
 ## db/psql: Connect to the banking database using psql
 .PHONY: db

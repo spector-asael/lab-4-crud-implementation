@@ -85,3 +85,52 @@ func (m DepositModel) Insert(d *Deposit) error {
 
 	return tx.Commit()
 }
+
+// UpdateAmount updates the amount of an existing ledger entry.
+// For demonstration purposes only (real systems would use reversals).
+func (m DepositModel) UpdateAmount(ledgerID int64, newAmount float64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	tx, err := m.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	// Convert newAmount into debit/credit
+	var debit, credit float64
+	if newAmount > 0 {
+		debit = newAmount
+		credit = 0
+	} else {
+		debit = 0
+		credit = -newAmount
+	}
+
+	// Update ledger entry
+	result, err := tx.ExecContext(ctx, `
+		UPDATE ledger_entries
+		SET debit = $1,
+		    credit = $2,
+		    updated_at = NOW()
+		WHERE id = $3
+	`, debit, credit, ledgerID)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if rowsAffected == 0 {
+		tx.Rollback()
+		return sql.ErrNoRows
+	}
+
+	return tx.Commit()
+}

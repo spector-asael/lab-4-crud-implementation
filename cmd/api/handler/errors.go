@@ -4,8 +4,9 @@ package handler
 import (
   "fmt"
   "net/http"
+  "errors"
 )
-
+var ErrRecordNotFound = errors.New("record not found")
 // log an error message
 func (a *ApplicationDependencies)logError(r *http.Request, err error)  {
 
